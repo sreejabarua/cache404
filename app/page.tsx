@@ -60,7 +60,8 @@ const caches = [
     lng: -73.679248,
     points: 4,
     difficulty: "medium",
-    riddle: "I am where hundreds sit in silence, in front of the DCC Cafe. Row 5 holds your path, seat 7 is where I wait.",
+    riddle:
+      "I am where hundreds sit in silence, in front of the DCC Cafe. Row 5 holds your path, seat 7 is where I wait.",
   },
   {
     id: 3,
@@ -79,7 +80,8 @@ const caches = [
     lng: -73.682550,
     points: 2,
     difficulty: "easy",
-    riddle: "Go where help is given on the floor of study. By glass that frames downtown Troy in view, Where light meets the window—I’ll be waiting for you.",
+    riddle:
+      "Go where help is given on the floor of study. By glass that frames downtown Troy in view, Where light meets the window—I’ll be waiting for you.",
   },
   {
     id: 5,
@@ -115,16 +117,14 @@ const caches = [
     lng: -73.682547,
     points: 6,
     difficulty: "hard",
-    riddle: "In the edifice where computation theory and mathematical abstraction align, find the office where John Sturman's name lies",
+    riddle:
+      "In the edifice where computation theory and mathematical abstraction align, find the office where John Sturman's name lies",
   },
 ];
 
 /* ---------------- STYLE ---------------- */
 
-const difficultyMap: Record<
-  string,
-  { label: string; color: string }
-> = {
+const difficultyMap: Record<string, { label: string; color: string }> = {
   easy: { label: "Easy", color: "green" },
   medium: { label: "Medium", color: "orange" },
   hard: { label: "Hard", color: "red" },
@@ -147,15 +147,16 @@ export default function Home() {
   const [selectedCache, setSelectedCache] = useState<any>(null);
   const [completedCaches, setCompletedCaches] = useState<number[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /* ---------------- MAP LOADER ---------------- */
+  /* ---------------- MAP ---------------- */
 
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-  });
+const { isLoaded } = useJsApiLoader({
+  id: "google-map-script",
+  googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+});
 
   /* ---------------- AUTH ---------------- */
 
@@ -177,8 +178,26 @@ export default function Home() {
   }, []);
 
   const login = async () => {
-    const res = await signInWithPopup(auth, provider);
-    setUser(res.user);
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const res = await signInWithPopup(auth, provider);
+      setUser(res.user);
+    } catch (err: any) {
+      console.error("Login error:", err);
+
+      if (
+        err.code === "auth/popup-blocked" ||
+        err.code === "auth/cancelled-popup-request"
+      ) {
+        alert(
+          "Popup blocked. Please allow popups and try again."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = async () => {
@@ -240,94 +259,81 @@ export default function Home() {
   /* ---------------- UI ---------------- */
 
   return (
-  <div>
-    {!user ? (
-      /* LOGIN SCREEN */
-      <div
-        style={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundImage: "url('/cache_background.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          position: "relative",
-        }}
-      >
+    <div>
+      {!user ? (
         <div
           style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-          }}
-        />
-
-        {/* LOGIN CARD */}
-        <div
-          style={{
+            height: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundImage:
+              "url('/cache_background.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             position: "relative",
-            background: "white",
-            padding: "60px",
-            borderRadius: "24px",
-            width: "600px",
-            textAlign: "center",
-            zIndex: 1,
-            color: "black",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
           }}
         >
-          <h1
+          <div
             style={{
-              fontSize: "4rem",
-              fontWeight: 900,
-              marginBottom: "10px",
-              color: "black",
+              position: "absolute",
+              inset: 0,
+              background: "rgba(0,0,0,0.45)",
             }}
-          >
-            📍 Cache404
-          </h1>
+          />
 
-          <p
+          <div
             style={{
-              fontSize: "1.2rem",
+              position: "relative",
+              background: "white",
+              padding: "60px",
+              borderRadius: "24px",
+              width: "600px",
+              textAlign: "center",
+              zIndex: 1,
               color: "black",
-              marginBottom: "30px",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
             }}
           >
-            RPI × GDG Geocaching Game
-          </p>
+            <h1 style={{ fontSize: "4rem", fontWeight: 900 }}>
+              📍 Cache404
+            </h1>
 
-          <button
-            onClick={login}
-            style={{
-              width: "100%",
-              padding: "14px",
-              background: "#4285F4",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            Sign in with Google
-          </button>
+            <p style={{ fontSize: "1.2rem" }}>
+              RPI × GDG Geocaching Game
+            </p>
 
-          {/* FOOTER */}
-          <p
-            style={{
-              marginTop: "20px",
-              fontSize: "0.9rem",
-              color: "black",
-              opacity: 0.7,
-            }}
-          >
-            Developed by Sreeja Barua
-          </p>
+            <button
+              onClick={login}
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "14px",
+                background: loading ? "#999" : "#4285F4",
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                cursor: loading ? "not-allowed" : "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              {loading
+                ? "Signing in..."
+                : "Sign in with Google"}
+            </button>
+
+            <p
+              style={{
+                marginTop: "20px",
+                fontSize: "0.9rem",
+                opacity: 0.7,
+              }}
+            >
+              Developed by Sreeja Barua
+            </p>
+          </div>
         </div>
-      </div>
-    ) : (
+      ) : (
         <>
           {/* TOP BAR */}
           <div
@@ -342,32 +348,9 @@ export default function Home() {
               color: "black",
             }}
           >
-            Welcome {user.displayName}!
+            Welcome {user.displayName}
             <br />
-            <button
-              onClick={logout}
-              style={{
-                marginTop: "8px",
-                padding: "6px 12px",
-                background: "#000",
-                color: "#fff",
-                border: "none",
-                borderRadius: "999px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "0.85rem",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                transition: "all 0.2s ease",
-              }}
-              onMouseOver={(e) => {
-                (e.currentTarget.style.background = "#333");
-              }}
-              onMouseOut={(e) => {
-                (e.currentTarget.style.background = "#000");
-              }}
-            >
-              Logout
-            </button>
+            <button onClick={logout}>Logout</button>
           </div>
 
           {/* LEADERBOARD */}
@@ -385,25 +368,12 @@ export default function Home() {
             }}
           >
             <h3>🏆 Leaderboard</h3>
-
-            {leaderboard.length === 0 ? (
-              <p>No players yet</p>
-            ) : (
-              leaderboard.slice(0, 5).map((p, i) => (
-                <div
-                  key={p.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>
-                    #{i + 1} {p.name || "Anon"}
-                  </span>
-                  <span>{p.totalPoints || 0}</span>
-                </div>
-              ))
-            )}
+            {leaderboard.slice(0, 5).map((p, i) => (
+              <div key={p.id}>
+                #{i + 1} {p.name || "Anon"} -{" "}
+                {p.totalPoints || 0}
+              </div>
+            ))}
           </div>
 
           {/* MAP */}
@@ -440,43 +410,20 @@ export default function Home() {
                   <div style={{ color: "black" }}>
                     <h3>{selectedCache.name}</h3>
 
-                    <p>
-                      <b>Riddle:</b> {selectedCache.riddle}
-                    </p>
-
-                    <p>
-                      <b>Points:</b> {selectedCache.points}
-                    </p>
+                    <p>{selectedCache.riddle}</p>
 
                     <button
-                      disabled={completedCaches.includes(
-                        selectedCache.id
-                      )}
                       onClick={() =>
                         fileInputRef.current?.click()
                       }
-                      style={{
-                        marginTop: "10px",
-                        padding: "6px 10px",
-                        background: completedCaches.includes(
-                          selectedCache.id
-                        )
-                          ? "gray"
-                          : "black",
-                        color: "white",
-                        borderRadius: "6px",
-                        border: "none",
-                        cursor: completedCaches.includes(
-                          selectedCache.id
-                        )
-                          ? "not-allowed"
-                          : "pointer",
-                      }}
+                      disabled={completedCaches.includes(
+                        selectedCache.id
+                      )}
                     >
                       {completedCaches.includes(
                         selectedCache.id
                       )
-                        ? "Completed ✔"
+                        ? "Completed"
                         : "Upload Proof"}
                     </button>
 
