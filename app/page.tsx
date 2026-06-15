@@ -7,19 +7,14 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 
-import { storage, db, auth, provider } from "@/lib/firebase";
-import { ref, uploadBytes } from "firebase/storage";
+import { db, auth, provider } from "@/lib/firebase";
 
 import {
   doc,
   setDoc,
   getDoc,
-  onSnapshot,
-  collection,
-  query,
-  orderBy,
 } from "firebase/firestore";
 
 import {
@@ -50,8 +45,8 @@ const caches = [
     lng: -73.676679,
     points: 2,
     difficulty: "easy",
-    riddle:
-      "Mothers may give comfort, but I'm where students go for quick relief from hunger.",
+    password: "SU2024",
+    funFact: "RPI's Student Union was built in 1937 and is one of the oldest student unions in the US!",
   },
   {
     id: 2,
@@ -60,8 +55,8 @@ const caches = [
     lng: -73.679248,
     points: 4,
     difficulty: "medium",
-    riddle:
-      "I am where hundreds sit in silence, in front of the DCC Cafe. Row 5 holds your path, seat 7 is where I wait.",
+    password: "DCC404",
+    funFact: "The Darrin Communications Center hosts over 500 students in lectures every single day!",
   },
   {
     id: 3,
@@ -70,8 +65,8 @@ const caches = [
     lng: -73.681175,
     points: 6,
     difficulty: "hard",
-    riddle:
-      "Look where green meets Greene, where shadows lean—search the quiet bushes at my front unseen.",
+    password: "ARCHE22",
+    funFact: "RPI's Architecture program is one of the oldest in the United States, founded in 1929!",
   },
   {
     id: 4,
@@ -80,8 +75,8 @@ const caches = [
     lng: -73.682550,
     points: 2,
     difficulty: "easy",
-    riddle:
-      "Go where help is given on the floor of study. By glass that frames downtown Troy in view, Where light meets the window—I’ll be waiting for you.",
+    password: "ALAC99",
+    funFact: "The Architecture Lab and Academic Computing center supports over 3,000 students each semester!",
   },
   {
     id: 5,
@@ -90,7 +85,8 @@ const caches = [
     lng: -73.675388,
     points: 2,
     difficulty: "easy",
-    riddle: "Look in the place where Steph Curry sinks 3s",
+    password: "RPIHOOPS",
+    funFact: "RPI's hockey team has won multiple ECAC championships and is one of the most storied programs in college hockey!",
   },
   {
     id: 6,
@@ -99,7 +95,8 @@ const caches = [
     lng: -73.676934,
     points: 4,
     difficulty: "medium",
-    riddle: "Where a climb never ends nor reaches a floor",
+    password: "MUELLER6",
+    funFact: "Mueller Center has one of the best rock climbing walls of any university in New York State!",
   },
   {
     id: 7,
@@ -108,7 +105,8 @@ const caches = [
     lng: -73.677643,
     points: 6,
     difficulty: "hard",
-    riddle: "Find me sparkling on the door of a Church",
+    password: "QUAD777",
+    funFact: "The RPI Quad is home to the Approach, a historic staircase with 101 steps leading up to the main campus!",
   },
   {
     id: 8,
@@ -117,18 +115,10 @@ const caches = [
     lng: -73.682547,
     points: 6,
     difficulty: "hard",
-    riddle:
-      "In the edifice where computation theory and mathematical abstraction align, find the office where John Sturman's name lies",
+    password: "AMOS2024",
+    funFact: "Amos Eaton Hall is named after the founder of RPI, who established the institute in 1824 — making RPI one of the oldest tech universities in the English-speaking world!",
   },
 ];
-
-/* ---------------- STYLE ---------------- */
-
-const difficultyMap: Record<string, { label: string; color: string }> = {
-  easy: { label: "Easy", color: "green" },
-  medium: { label: "Medium", color: "orange" },
-  hard: { label: "Hard", color: "red" },
-};
 
 /* ---------------- MARKERS ---------------- */
 
@@ -146,54 +136,46 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [selectedCache, setSelectedCache] = useState<any>(null);
   const [completedCaches, setCompletedCaches] = useState<number[]>([]);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [unlockedFunFact, setUnlockedFunFact] = useState<string | null>(null);
 
   /* ---------------- MAP ---------------- */
 
-const { isLoaded } = useJsApiLoader({
-  id: "google-map-script",
-  googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-});
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+  });
 
   /* ---------------- AUTH ---------------- */
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
-
       if (!u) return;
-
       const userRef = doc(db, "users", u.uid);
       const snap = await getDoc(userRef);
-
       if (snap.exists()) {
         setCompletedCaches(snap.data().completedCaches || []);
       }
     });
-
     return () => unsub();
   }, []);
 
   const login = async () => {
     if (loading) return;
-
     setLoading(true);
     try {
       const res = await signInWithPopup(auth, provider);
       setUser(res.user);
     } catch (err: any) {
       console.error("Login error:", err);
-
       if (
         err.code === "auth/popup-blocked" ||
         err.code === "auth/cancelled-popup-request"
       ) {
-        alert(
-          "Popup blocked. Please allow popups and try again."
-        );
+        alert("Popup blocked. Please allow popups and try again.");
       }
     } finally {
       setLoading(false);
@@ -205,55 +187,45 @@ const { isLoaded } = useJsApiLoader({
     setUser(null);
   };
 
-  /* ---------------- LEADERBOARD ---------------- */
+  /* ---------------- PASSWORD CHECK ---------------- */
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "users"),
-      orderBy("totalPoints", "desc")
-    );
+  const handlePasswordSubmit = async () => {
+    if (!selectedCache || !user) return;
 
-    const unsub = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
-      setLeaderboard(data);
-    });
+    if (passwordInput.trim().toUpperCase() === selectedCache.password.toUpperCase()) {
+      setUnlockedFunFact(selectedCache.funFact);
+      setPasswordError(false);
 
-    return () => unsub();
-  }, []);
+      if (!completedCaches.includes(selectedCache.id)) {
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        const current = snap.exists() ? snap.data().totalPoints || 0 : 0;
+        const updated = [...completedCaches, selectedCache.id];
 
-  /* ---------------- UPLOAD ---------------- */
+        await setDoc(
+          userRef,
+          {
+            name: user.displayName,
+            email: user.email,
+            totalPoints: current + selectedCache.points,
+            completedCaches: updated,
+          },
+          { merge: true }
+        );
 
-  const uploadProof = async (cache: any, file: File) => {
-    if (!user || !file) return;
+        setCompletedCaches(updated);
+      }
+    } else {
+      setPasswordError(true);
+      setUnlockedFunFact(null);
+    }
+  };
 
-    if (completedCaches.includes(cache.id)) return;
-
-    const storageRef = ref(
-      storage,
-      `proofs/${user.uid}/${cache.id}-${Date.now()}`
-    );
-
-    await uploadBytes(storageRef, file);
-
-    const userRef = doc(db, "users", user.uid);
-
-    const updated = [...completedCaches, cache.id];
-
-    await setDoc(
-      userRef,
-      {
-        name: user.displayName,
-        email: user.email,
-        totalPoints: cache.points,
-        completedCaches: updated,
-      },
-      { merge: true }
-    );
-
-    setCompletedCaches(updated);
+  const handleMarkerClick = (cache: any) => {
+    setSelectedCache(cache);
+    setPasswordInput("");
+    setPasswordError(false);
+    setUnlockedFunFact(null);
   };
 
   /* ---------------- UI ---------------- */
@@ -267,21 +239,13 @@ const { isLoaded } = useJsApiLoader({
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            backgroundImage:
-              "url('/cache_background.png')",
+            backgroundImage: "url('/cache_background.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             position: "relative",
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "rgba(0,0,0,0.45)",
-            }}
-          />
-
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} />
           <div
             style={{
               position: "relative",
@@ -295,14 +259,8 @@ const { isLoaded } = useJsApiLoader({
               boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
             }}
           >
-            <h1 style={{ fontSize: "4rem", fontWeight: 900 }}>
-              📍 Cache404
-            </h1>
-
-            <p style={{ fontSize: "1.2rem" }}>
-              RPI × GDG Geocaching Game
-            </p>
-
+            <h1 style={{ fontSize: "4rem", fontWeight: 900 }}>📍 Cache404</h1>
+            <p style={{ fontSize: "1.2rem" }}>RPI × GDG Geocaching Game</p>
             <button
               onClick={login}
               disabled={loading}
@@ -317,18 +275,9 @@ const { isLoaded } = useJsApiLoader({
                 fontWeight: "bold",
               }}
             >
-              {loading
-                ? "Signing in..."
-                : "Sign in with Google"}
+              {loading ? "Signing in..." : "Sign in with Google"}
             </button>
-
-            <p
-              style={{
-                marginTop: "20px",
-                fontSize: "0.9rem",
-                opacity: 0.7,
-              }}
-            >
+            <p style={{ marginTop: "20px", fontSize: "0.9rem", opacity: 0.7 }}>
               Developed by Sreeja Barua
             </p>
           </div>
@@ -353,94 +302,92 @@ const { isLoaded } = useJsApiLoader({
             <button onClick={logout}>Logout</button>
           </div>
 
-          {/* LEADERBOARD */}
-          <div
-            style={{
-              position: "absolute",
-              top: 10,
-              right: 10,
-              zIndex: 10,
-              background: "white",
-              padding: "12px",
-              borderRadius: "12px",
-              width: "240px",
-              color: "black",
-            }}
-          >
-            <h3>🏆 Leaderboard</h3>
-            {leaderboard.slice(0, 5).map((p, i) => (
-              <div key={p.id}>
-                #{i + 1} {p.name || "Anon"} -{" "}
-                {p.totalPoints || 0}
-              </div>
-            ))}
-          </div>
-
           {/* MAP */}
           {isLoaded && (
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={center}
-              zoom={16}
-            >
+            <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={16}>
               {caches.map((cache) => (
                 <Marker
                   key={cache.id}
-                  position={{
-                    lat: cache.lat,
-                    lng: cache.lng,
-                  }}
-                  icon={{
-                    url: getMarkerIcon(cache.difficulty),
-                  }}
-                  onClick={() => setSelectedCache(cache)}
+                  position={{ lat: cache.lat, lng: cache.lng }}
+                  icon={{ url: getMarkerIcon(cache.difficulty) }}
+                  onClick={() => handleMarkerClick(cache)}
                 />
               ))}
 
               {selectedCache && (
                 <InfoWindow
-                  position={{
-                    lat: selectedCache.lat,
-                    lng: selectedCache.lng,
+                  position={{ lat: selectedCache.lat, lng: selectedCache.lng }}
+                  onCloseClick={() => {
+                    setSelectedCache(null);
+                    setUnlockedFunFact(null);
+                    setPasswordError(false);
+                    setPasswordInput("");
                   }}
-                  onCloseClick={() =>
-                    setSelectedCache(null)
-                  }
                 >
-                  <div style={{ color: "black" }}>
-                    <h3>{selectedCache.name}</h3>
+                  <div style={{ color: "black", minWidth: "220px" }}>
+                    <h3 style={{ marginBottom: "8px" }}>{selectedCache.name}</h3>
 
-                    <p>{selectedCache.riddle}</p>
-
-                    <button
-                      onClick={() =>
-                        fileInputRef.current?.click()
-                      }
-                      disabled={completedCaches.includes(
-                        selectedCache.id
-                      )}
-                    >
-                      {completedCaches.includes(
-                        selectedCache.id
-                      )
-                        ? "Completed"
-                        : "Upload Proof"}
-                    </button>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        if (e.target.files?.[0]) {
-                          uploadProof(
-                            selectedCache,
-                            e.target.files[0]
-                          );
-                        }
-                      }}
-                    />
+                    {completedCaches.includes(selectedCache.id) ? (
+                      <div>
+                        <p style={{ color: "green", fontWeight: "bold" }}>✅ Completed!</p>
+                        <p style={{ fontSize: "0.85rem", fontStyle: "italic" }}>
+                          🎓 {selectedCache.funFact}
+                        </p>
+                      </div>
+                    ) : unlockedFunFact ? (
+                      <div>
+                        <p style={{ color: "green", fontWeight: "bold" }}>
+                          🎉 +{selectedCache.points} points earned!
+                        </p>
+                        <p style={{ fontSize: "0.85rem", fontStyle: "italic" }}>
+                          🎓 {unlockedFunFact}
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p style={{ fontSize: "0.9rem", marginBottom: "8px" }}>
+                          Enter the cache password:
+                        </p>
+                        <input
+                          type="text"
+                          value={passwordInput}
+                          onChange={(e) => {
+                            setPasswordInput(e.target.value);
+                            setPasswordError(false);
+                          }}
+                          onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()}
+                          placeholder="Password..."
+                          style={{
+                            width: "100%",
+                            padding: "8px",
+                            borderRadius: "6px",
+                            border: passwordError ? "2px solid red" : "1px solid #ccc",
+                            marginBottom: "8px",
+                            boxSizing: "border-box",
+                          }}
+                        />
+                        {passwordError && (
+                          <p style={{ color: "red", fontSize: "0.8rem", marginBottom: "6px" }}>
+                            ❌ Wrong password, try again!
+                          </p>
+                        )}
+                        <button
+                          onClick={handlePasswordSubmit}
+                          style={{
+                            width: "100%",
+                            padding: "8px",
+                            background: "#4285F4",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </InfoWindow>
               )}
