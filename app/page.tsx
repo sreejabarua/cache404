@@ -349,22 +349,23 @@ export default function Home() {
           </button>
           </div>
           <div
-            style={{
-              position: "absolute",
-              top: 10,
-              right: 10,
-              zIndex: 10,
-              background: "#fef9c3",
-              padding: "10px 14px",
-              borderRadius: "10px",
-              color: "#854d0e",
-              fontWeight: "bold",
-              fontSize: "0.85rem",
-              borderLeft: "4px solid #eab308",
-            }}
-          >
-            🏆 Return to the Union at 4:00 to get your prizes!
-          </div>
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                zIndex: 10,
+                background: "#fef9c3",
+                padding: "6px 10px",
+                borderRadius: "8px",
+                color: "#854d0e",
+                fontWeight: "bold",
+                fontSize: "0.7rem",
+                borderLeft: "3px solid #eab308",
+                maxWidth: "140px",
+              }}
+            >
+              🏆 Return to the Union at 4:00 for prizes!
+            </div>
 
           {/* MAP */}
           {isLoaded && (
