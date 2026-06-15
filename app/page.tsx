@@ -348,6 +348,23 @@ export default function Home() {
             Logout
           </button>
           </div>
+          <div
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              zIndex: 10,
+              background: "#fef9c3",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              color: "#854d0e",
+              fontWeight: "bold",
+              fontSize: "0.85rem",
+              borderLeft: "4px solid #eab308",
+            }}
+          >
+            🏆 Return to the Union at 4:00 to get your prizes!
+          </div>
 
           {/* MAP */}
           {isLoaded && (
