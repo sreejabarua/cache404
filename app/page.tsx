@@ -46,37 +46,37 @@ const caches = [
     points: 2,
     difficulty: "easy",
     password: "SU2024",
-    funFact: "RPI's Student Union was built in 1937 and is one of the oldest student unions in the US!",
+    funFact: "The Union is a great place to socialize and get food not from the dining hall",
   },
   {
     id: 2,
     name: "DCC Cache",
     lat: 42.729446,
     lng: -73.679248,
-    points: 4,
+    points: 2,
     difficulty: "medium",
     password: "DCC404",
-    funFact: "The Darrin Communications Center hosts over 500 students in lectures every single day!",
+    funFact: "SKI, LXA, and SigChi are the best frats at RPI",
   },
   {
     id: 3,
     name: "ArchE Cache",
     lat: 42.730073,
     lng: -73.681175,
-    points: 6,
+    points: 2,
     difficulty: "hard",
     password: "ARCHE22",
-    funFact: "RPI's Architecture program is one of the oldest in the United States, founded in 1929!",
+    funFact: "Greene is the only building open 24 hrs",
   },
   {
     id: 4,
-    name: "ALAC Cache",
+    name: "Folsom Library Cache",
     lat: 42.729383,
     lng: -73.682550,
     points: 2,
     difficulty: "easy",
     password: "ALAC99",
-    funFact: "The Architecture Lab and Academic Computing center supports over 3,000 students each semester!",
+    funFact: "The first floor of the library is where students can get tutored for free!",
   },
   {
     id: 5,
@@ -86,37 +86,57 @@ const caches = [
     points: 2,
     difficulty: "easy",
     password: "RPIHOOPS",
-    funFact: "RPI's hockey team has won multiple ECAC championships and is one of the most storied programs in college hockey!",
+    funFact: "If you go behind the basketball court and down to Bouton road, its a shortcut to Big Apple Pizza (Bapple)",
   },
   {
     id: 6,
     name: "Queen of Mueller Cache",
     lat: 42.728789,
     lng: -73.676934,
-    points: 4,
-    difficulty: "medium",
+    points: 2,
+    difficulty: "blue",
     password: "MUELLER6",
-    funFact: "Mueller Center has one of the best rock climbing walls of any university in New York State!",
+    funFact: "Mueller hosts fitness classes every week and hosts Wellness Wednesdays!",
   },
   {
     id: 7,
     name: "Quad Cache",
     lat: 42.730163,
     lng: -73.677643,
-    points: 6,
+    points: 2,
     difficulty: "hard",
     password: "QUAD777",
-    funFact: "The RPI Quad is home to the Approach, a historic staircase with 101 steps leading up to the main campus!",
+    funFact: "If you take the West Shuttle from the Union, it drops you off in front of Gong Cha!",
   },
   {
     id: 8,
     name: "Amos Eaton Cache",
     lat: 42.730276,
     lng: -73.682547,
-    points: 6,
-    difficulty: "hard",
+    points: 2,
+    difficulty: "blue",
     password: "AMOS2024",
-    funFact: "Amos Eaton Hall is named after the founder of RPI, who established the institute in 1824 — making RPI one of the oldest tech universities in the English-speaking world!",
+    funFact: "Amos Eaton has a Computer Science lounge on the first floor",
+  },
+  {
+    id: 9,
+    name: "Sage Cache",
+    lat: 42.730891,
+    lng: -73.681637,
+    points: 2,
+    difficulty: "medium",
+    password: "RUSSELL",
+    funFact: "There are great study spots on the 4th and 5th floor of Sage",
+  },
+  {
+    id: 10,
+    name: "Ricketts Cache",
+    lat: 42.730921,
+    lng: -73.679804,
+    points: 2,
+    difficulty: "blue",
+    password: "Marty",
+    funFact: "The club you least expect to join might become your favorite part of college.",
   },
 ];
 
@@ -125,6 +145,8 @@ const caches = [
 const getMarkerIcon = (difficulty: string) => {
   if (difficulty === "easy")
     return "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
+  if (difficulty === "blue")
+    return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
   if (difficulty === "medium")
     return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
   return "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
@@ -245,40 +267,50 @@ export default function Home() {
             position: "relative",
           }}
         >
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} />
+
           <div
             style={{
               position: "relative",
-              background: "white",
-              padding: "60px",
-              borderRadius: "24px",
-              width: "600px",
+              background: "rgba(255,255,255,0.95)",
+              padding: "32px 24px",
+              borderRadius: "20px",
+              width: "90%",
+              maxWidth: "340px",
               textAlign: "center",
               zIndex: 1,
               color: "black",
-              boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
             }}
           >
-            <h1 style={{ fontSize: "4rem", fontWeight: 900 }}>📍 Cache404</h1>
-            <p style={{ fontSize: "1.2rem" }}>RPI × GDG Geocaching Game</p>
+            <p style={{ fontSize: "2rem", margin: "0 0 4px 0" }}>📍</p>
+            <h1 style={{ fontSize: "1.8rem", fontWeight: 900, margin: "0 0 4px 0" }}>
+              Cache404
+            </h1>
+            <p style={{ fontSize: "0.85rem", color: "#666", margin: "0 0 24px 0" }}>
+              RPI × GDG Geocaching Game
+            </p>
+
             <button
               onClick={login}
               disabled={loading}
               style={{
                 width: "100%",
-                padding: "14px",
+                padding: "12px",
                 background: loading ? "#999" : "#4285F4",
                 color: "white",
                 border: "none",
                 borderRadius: "10px",
                 cursor: loading ? "not-allowed" : "pointer",
                 fontWeight: "bold",
+                fontSize: "0.95rem",
               }}
             >
               {loading ? "Signing in..." : "Sign in with Google"}
             </button>
-            <p style={{ marginTop: "20px", fontSize: "0.9rem", opacity: 0.7 }}>
-              Developed by Sreeja Barua
+
+            <p style={{ marginTop: "16px", fontSize: "0.75rem", color: "#aaa" }}>
+              by Sreeja Barua
             </p>
           </div>
         </div>
@@ -297,9 +329,24 @@ export default function Home() {
               color: "black",
             }}
           >
-            Welcome {user.displayName}
+            Welcome {user.displayName}!
             <br />
-            <button onClick={logout}>Logout</button>
+            <button
+            onClick={logout}
+            style={{
+              marginTop: "6px",
+              padding: "6px 14px",
+              background: "#ef4444",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: "0.85rem",
+            }}
+          >
+            Logout
+          </button>
           </div>
 
           {/* MAP */}
@@ -325,13 +372,13 @@ export default function Home() {
                   }}
                 >
                   <div style={{ color: "black", minWidth: "220px" }}>
-                    <h3 style={{ marginBottom: "8px" }}>{selectedCache.name}</h3>
+                    <h3 style={{ fontWeight: 900, margin: "0 0 8px 0" }}>{selectedCache.name}</h3>
 
                     {completedCaches.includes(selectedCache.id) ? (
                       <div>
                         <p style={{ color: "green", fontWeight: "bold" }}>✅ Completed!</p>
-                        <p style={{ fontSize: "0.85rem", fontStyle: "italic" }}>
-                          🎓 {selectedCache.funFact}
+                        <p style={{ fontSize: "0.85rem", fontStyle: "arial" }}>
+                           {selectedCache.funFact}
                         </p>
                       </div>
                     ) : unlockedFunFact ? (
