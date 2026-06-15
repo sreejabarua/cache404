@@ -369,7 +369,7 @@ export default function Home() {
 
           {/* MAP */}
           {isLoaded && (
-            <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={14}>
+            <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={15}>
               {caches.map((cache) => (
                 <Marker
                   key={cache.id}
