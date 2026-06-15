@@ -310,7 +310,7 @@ export default function Home() {
             </button>
 
             <p style={{ marginTop: "16px", fontSize: "0.75rem", color: "#aaa" }}>
-              by Sreeja Barua
+              Developed by Sreeja Barua
             </p>
           </div>
         </div>
