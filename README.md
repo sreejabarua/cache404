@@ -6,12 +6,6 @@ Tech: Next.js + React, Google Maps API, Firebase Authentication, Firestore Datab
 · Geocaching game for RPI students 
 
 
-## **Functions:** 
-· Interactive Campus Map
-· User Authentication
-· Mobile-Friendly Design
-· Firebase Data Storage
-
 ## **Instructions to run:**
 
 -Download the project files as a ZIP or clone the repository.
