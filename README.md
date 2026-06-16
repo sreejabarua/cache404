@@ -14,7 +14,7 @@ Tech: Next.js + React, Google Maps API, Firebase Authentication, Firestore Datab
 
     npm install
 
- -Create a .env.local file and add the required environment variables:: 
+ -Create a .env.local file and get your own API keys using Google Cloud and Firebase: 
 
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
     NEXT_PUBLIC_FIREBASE_API_KEY= 
